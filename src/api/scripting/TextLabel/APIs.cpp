@@ -28,7 +28,7 @@ IPC_API(TextLabel3D_AttachToPlayer, uintptr_t ptr, uintptr_t player, float offse
 {
 	GET_POOL_ENTITY_CHECKED(OmpManager::Get()->textlabels, ITextLabel, ptr, textlabel);
 	GET_POOL_ENTITY_CHECKED(OmpManager::Get()->players, IPlayer, player, player_);
-	textlabel->attachToPlayer(player_, { offsetX, offsetY, offsetZ });
+	textlabel->attachToPlayer(*player_, { offsetX, offsetY, offsetZ });
 	IPC_RETURN();
 }
 
@@ -36,7 +36,7 @@ IPC_API(TextLabel3D_AttachToVehicle, uintptr_t ptr, uintptr_t vehicle, float off
 {
 	GET_POOL_ENTITY_CHECKED(OmpManager::Get()->textlabels, ITextLabel, ptr, textlabel);
 	GET_POOL_ENTITY_CHECKED(OmpManager::Get()->vehicles, IVehicle, vehicle, vehicle_);
-	textlabel->attachToVehicle(vehicle_, { offsetX, offsetY, offsetZ });
+	textlabel->attachToVehicle(*vehicle_, { offsetX, offsetY, offsetZ });
 	IPC_RETURN();
 }
 
@@ -61,14 +61,14 @@ IPC_API(TextLabel3D_IsStreamedIn, uintptr_t player, uintptr_t ptr)
 {
 	GET_POOL_ENTITY_CHECKED(OmpManager::Get()->players, IPlayer, player, player_);
 	GET_POOL_ENTITY_CHECKED(OmpManager::Get()->textlabels, ITextLabel, ptr, textlabel);
-	auto streamed = textlabel->isStreamedInForPlayer(player_);
+	auto streamed = textlabel->isStreamedInForPlayer(*player_);
 	IPC_RETURN(bool streamed);
 }
 
 IPC_API(TextLabel3D_GetText, uintptr_t ptr)
 {
 	GET_POOL_ENTITY_CHECKED(OmpManager::Get()->textlabels, ITextLabel, ptr, textlabel);
-	ConstStringRef output = textlabel->getText();
+	StringView output = textlabel->getText();
 	IPC_RETURN(ConstStringRef output);
 }
 
@@ -157,11 +157,13 @@ IPC_API(PlayerTextLabel3D_Create, uintptr_t player, ConstStringRef text, uint32_
 
 		if (attachedPlayer)
 		{
-			textlabel = labelData->create(text, Colour::FromRGBA(colour), { x, y, z }, drawDistance, los, *attachedPlayer);
+			GET_POOL_ENTITY_CHECKED(OmpManager::Get()->players, IPlayer, attachedPlayer, attachedPlayer_);
+			textlabel = labelData->create(text, Colour::FromRGBA(colour), { x, y, z }, drawDistance, los, *attachedPlayer_);
 		}
 		else if (attachedVehicle)
 		{
-			textlabel = labelData->create(text, Colour::FromRGBA(colour), { x, y, z }, drawDistance, los, *attachedVehicle);
+			GET_POOL_ENTITY_CHECKED(OmpManager::Get()->vehicles, IVehicle, attachedVehicle, attachedVehicle_);
+			textlabel = labelData->create(text, Colour::FromRGBA(colour), { x, y, z }, drawDistance, los, *attachedVehicle_);
 		}
 		else
 		{
@@ -211,7 +213,7 @@ IPC_API(PlayerTextLabel3D_IsValid, uintptr_t player, uintptr_t ptr)
 IPC_API(PlayerTextLabel3D_GetText, uintptr_t player, uintptr_t ptr)
 {
 	GET_POOL_ENTITY_CHECKED(OmpManager::Get()->playertextlabels, IPlayerTextLabel, ptr, textlabel);
-	ConstStringRef output = textlabel->getText();
+	StringView output = textlabel->getText();
 	IPC_RETURN(ConstStringRef output);
 }
 
