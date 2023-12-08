@@ -36,12 +36,16 @@ void OmpManager::Init(ICore* c, IComponentList* clist)
 	objects = GetComponent<IObjectsComponent>();
 	pickups = GetComponent<IPickupsComponent>();
 	textlabels = GetComponent<ITextLabelsComponent>();
+	playertextlabels = GetComponent<ITextLabelsComponent>();
 	vehicles = GetComponent<IVehiclesComponent>();
 	classes = GetComponent<IClassesComponent>();
 	console = GetComponent<IConsoleComponent>();
 	timers = GetComponent<ITimersComponent>();
 	models = GetComponent<ICustomModelsComponent>();
 	menus = GetComponent<IMenusComponent>();
+	textdraws = GetComponent<ITextDrawsComponent>();
+	recordings = GetComponent<IRecordingsComponent>();
+	vars = GetComponent<IVariablesComponent>();
 }
 
 void OmpManager::AddEvents()

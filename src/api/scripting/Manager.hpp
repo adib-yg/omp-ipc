@@ -16,6 +16,9 @@
 #include "Server/Components/CustomModels/custommodels.hpp"
 #include "Server/Components/Dialogs/dialogs.hpp"
 #include "Server/Components/Menus/menus.hpp"
+#include "Server/Components/TextDraws/textdraws.hpp"
+#include "Server/Components/Recordings/recordings.hpp"
+#include "Server/Components/Variables/variables.hpp"
 
 #define STRINGIFY2(X) #X
 #define STRINGIFY(X) STRINGIFY2(X)
@@ -50,6 +53,7 @@ public:
 	IPickupsComponent* pickups = nullptr;
 	IObjectsComponent* objects = nullptr;
 	ITextLabelsComponent* textlabels = nullptr;
+	ITextLabelsComponent* playertextlabels = nullptr;
 	IVehiclesComponent* vehicles = nullptr;
 	IActorsComponent* actors = nullptr;
 	IClassesComponent* classes = nullptr;
@@ -57,6 +61,9 @@ public:
 	ITimersComponent* timers = nullptr;
 	ICustomModelsComponent* models = nullptr;
 	IMenusComponent* menus = nullptr;
+	ITextDrawsComponent* textdraws = nullptr;
+	IRecordingsComponent* recordings = nullptr;
+	IVariablesComponent* vars = nullptr;
 
 private:
 	IComponentList* componentList = nullptr;
