@@ -42,7 +42,7 @@ IPC_API(TextDraw_IsVisibleForPlayer, uintptr_t player, uintptr_t ptr)
 	// term `visible` entirely - it is too ambiguous when things might be available to a player but
 	// out of their current line of sight.  Does `visible` mean "can be seen right now" or "can in
 	// theory be seen some time"?  In this respect `shown` and `streamed` are less ambiguous.
-	auto shown = textdraw->isShownForPlayer(player_);
+	auto shown = textdraw->isShownForPlayer(*player_);
 	IPC_RETURN(bool shown);
 }
 
@@ -134,7 +134,7 @@ IPC_API(TextDraw_ShowForPlayer, uintptr_t player, uintptr_t ptr)
 {
 	GET_POOL_ENTITY_CHECKED(OmpManager::Get()->players, IPlayer, player, player_);
 	GET_POOL_ENTITY_CHECKED(OmpManager::Get()->textdraws, ITextDraw, ptr, textdraw);
-	textdraw->showForPlayer(player_);
+	textdraw->showForPlayer(*player_);
 	IPC_RETURN();
 }
 
@@ -142,7 +142,7 @@ IPC_API(TextDraw_HideForPlayer, uintptr_t player, uintptr_t ptr)
 {
 	GET_POOL_ENTITY_CHECKED(OmpManager::Get()->players, IPlayer, player, player_);
 	GET_POOL_ENTITY_CHECKED(OmpManager::Get()->textdraws, ITextDraw, ptr, textdraw);
-	textdraw->hideForPlayer(player_);
+	textdraw->hideForPlayer(*player_);
 	IPC_RETURN();
 }
 
@@ -207,7 +207,7 @@ IPC_API(TextDraw_SetPos, uintptr_t ptr, float x, float y)
 IPC_API(TextDraw_GetString, uintptr_t ptr)
 {
 	GET_POOL_ENTITY_CHECKED(OmpManager::Get()->textdraws, ITextDraw, ptr, textdraw);
-	ConstStringRef text = textdraw->getText();
+	StringView text = textdraw->getText();
 	IPC_RETURN(ConstStringRef text);
 }
 
@@ -342,6 +342,6 @@ IPC_API(TextDraw_SetStringForPlayer, uintptr_t ptr, uintptr_t player, ConstStrin
 {
 	GET_POOL_ENTITY_CHECKED(OmpManager::Get()->textdraws, ITextDraw, ptr, textdraw);
 	GET_POOL_ENTITY_CHECKED(OmpManager::Get()->players, IPlayer, player, player_);
-	textdraw->setTextForPlayer(player_, text);
+	textdraw->setTextForPlayer(*player_, text);
 	IPC_RETURN();
 }
