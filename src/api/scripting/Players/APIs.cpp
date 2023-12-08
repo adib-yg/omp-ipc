@@ -658,7 +658,7 @@ IPC_API(Player_ShowNameTagForPlayer, uintptr_t player, uintptr_t other, bool ena
 {
 	GET_POOL_ENTITY_CHECKED(OmpManager::Get()->players, IPlayer, player, player_);
 	GET_POOL_ENTITY_CHECKED(OmpManager::Get()->players, IPlayer, other, other_);
-	player_->toggleOtherNameTag(other_, enable);
+	player_->toggleOtherNameTag(*other_, enable);
 	IPC_RETURN();
 }
 
@@ -679,17 +679,16 @@ IPC_API(Player_ToggleSpectating, uintptr_t player, bool enable)
 IPC_API(Player_ApplyAnimation, uintptr_t player, ConstStringRef animlib, ConstStringRef animname, float delta, bool loop, bool lockX, bool lockY, bool freeze, uint32_t time, int sync)
 {
 	GET_POOL_ENTITY_CHECKED(OmpManager::Get()->players, IPlayer, player, player_);
-	ConstStringRef AnimationData animationData(delta, loop, lockX, lockY, freeze, time, animlib, animname);
+	const AnimationData animationData(delta, loop, lockX, lockY, freeze, time, animlib, animname);
 	player_->applyAnimation(animationData, PlayerAnimationSyncType(sync));
 	IPC_RETURN();
 }
 
-IPC_API(Player_GetAnimationName, int index, ConstStringRef lib, ConstStringRef name)
+IPC_API(Player_GetAnimationName, int index)
 {
-	GET_POOL_ENTITY_CHECKED(OmpManager::Get()->players, IPlayer, player, player_);
 	Pair<StringView, StringView> anim = splitAnimationNames(index);
-	ConstStringRef animlib = anim.first;
-	ConstStringRef animname = anim.second;
+	StringView animlib = anim.first;
+	StringView animname = anim.second;
 	IPC_RETURN(ConstStringRef animlib, ConstStringRef animname);
 }
 
@@ -775,7 +774,7 @@ IPC_API(Player_GetVehicleID, uintptr_t data)
 		int id = vehicle->getID();
 		IPC_RETURN(int id);
 	}
-	return NO_DATA_SUCCESS_RETURN;
+	return FUNCTION_FAIL_RETURN;
 }
 
 IPC_API(Player_GetVehicleSeat, uintptr_t data)
@@ -789,7 +788,7 @@ IPC_API(Player_GetWeaponData, uintptr_t player, int slot)
 {
 	if (slot < 0 || slot >= MAX_WEAPON_SLOTS)
 	{
-		return NO_DATA_SUCCESS_RETURN;
+		return FUNCTION_FAIL_RETURN;
 	}
 	GET_POOL_ENTITY_CHECKED(OmpManager::Get()->players, IPlayer, player, player_);
 	const WeaponSlotData& weapon = player_->getWeaponSlot(slot);
@@ -830,7 +829,7 @@ IPC_API(Player_AttachCameraToObject, uintptr_t player, uintptr_t object)
 {
 	GET_POOL_ENTITY_CHECKED(OmpManager::Get()->players, IPlayer, player, player_);
 	GET_POOL_ENTITY_CHECKED(OmpManager::Get()->objects, IObject, object, object_);
-	player_->attachCameraToObject(object_);
+	player_->attachCameraToObject(*object_);
 	IPC_RETURN();
 }
 
@@ -838,7 +837,7 @@ IPC_API(Player_AttachCameraToPlayerObject, uintptr_t player, uintptr_t object)
 {
 	GET_POOL_ENTITY_CHECKED(OmpManager::Get()->players, IPlayer, player, player_);
 	GET_POOL_ENTITY_CHECKED(OmpManager::Get()->objects, IPlayerObject, object, object_);
-	player_->attachCameraToObject(object_);
+	player_->attachCameraToObject(*object_);
 	IPC_RETURN();
 }
 
@@ -889,7 +888,7 @@ IPC_API(Player_GetSurfingVehicleID, uintptr_t player)
 			IPC_RETURN(int id);
 		}
 	}
-	return NO_DATA_SUCCESS_RETURN;
+	IPC_RETURN();
 }
 
 IPC_API(Player_GetSurfingObjectID, uintptr_t player)
@@ -905,7 +904,7 @@ IPC_API(Player_GetSurfingObjectID, uintptr_t player)
 			IPC_RETURN(int id);
 		}
 	}
-	return NO_DATA_SUCCESS_RETURN;
+	IPC_RETURN();
 }
 
 IPC_API(Player_GetTargetPlayer, uintptr_t player)
@@ -914,10 +913,10 @@ IPC_API(Player_GetTargetPlayer, uintptr_t player)
 	IPlayer* target = player_->getTargetPlayer();
 	if (target)
 	{
-		int target = target->getID();
-		IPC_RETURN(int target);
+		uintptr_t target = reinterpret_cast<uintptr_t>(target);
+		IPC_RETURN(uintptr_t target);
 	}
-	return NO_DATA_SUCCESS_RETURN;
+	return FUNCTION_FAIL_RETURN;
 }
 
 IPC_API(Player_GetTargetActor, uintptr_t player)
@@ -926,10 +925,10 @@ IPC_API(Player_GetTargetActor, uintptr_t player)
 	IActor* target = player_->getTargetActor();
 	if (target)
 	{
-		int target = target->getID();
-		IPC_RETURN(int target);
+		uintptr_t target = reinterpret_cast<uintptr_t>(target);
+		IPC_RETURN(uintptr_t target);
 	}
-	return NO_DATA_SUCCESS_RETURN;
+	return FUNCTION_FAIL_RETURN;
 }
 
 IPC_API(Player_IsInVehicle, uintptr_t data, uintptr_t targetVehicle)
@@ -937,7 +936,7 @@ IPC_API(Player_IsInVehicle, uintptr_t data, uintptr_t targetVehicle)
 	GET_POOL_ENTITY_CHECKED(OmpManager::Get()->players, IPlayerVehicleData, data, data_);
 	GET_POOL_ENTITY_CHECKED(OmpManager::Get()->vehicles, IVehicle, targetVehicle, targetVehicle_);
 	IVehicle* vehicle = data_->getVehicle();
-	bool ret = bool(vehicle == &targetVehicle_);
+	bool ret = bool(vehicle == targetVehicle_);
 	IPC_RETURN(bool ret);
 }
 
@@ -960,7 +959,7 @@ IPC_API(Player_PlayCrimeReport, uintptr_t player, uintptr_t suspect, int crime)
 {
 	GET_POOL_ENTITY_CHECKED(OmpManager::Get()->players, IPlayer, player, player_);
 	GET_POOL_ENTITY_CHECKED(OmpManager::Get()->players, IPlayer, suspect, suspect_);
-	bool ret = bool(player_->playerCrimeReport(suspect_, crime));
+	bool ret = bool(player_->playerCrimeReport(*suspect_, crime));
 	IPC_RETURN(bool ret);
 }
 
@@ -1019,7 +1018,7 @@ IPC_API(Player_SetMarkerForPlayer, uintptr_t player, uintptr_t other, uint32_t c
 {
 	GET_POOL_ENTITY_CHECKED(OmpManager::Get()->players, IPlayer, player, player_);
 	GET_POOL_ENTITY_CHECKED(OmpManager::Get()->players, IPlayer, other, other_);
-	player_->setOtherColour(other_, Colour::FromRGBA(colour));
+	player_->setOtherColour(*other_, Colour::FromRGBA(colour));
 	IPC_RETURN();
 }
 
@@ -1028,13 +1027,13 @@ IPC_API(Player_GetMarkerForPlayer, uintptr_t player, uintptr_t other)
 	GET_POOL_ENTITY_CHECKED(OmpManager::Get()->players, IPlayer, player, player_);
 	GET_POOL_ENTITY_CHECKED(OmpManager::Get()->players, IPlayer, other, other_);
 	Colour colour;
-	bool hasPlayerSpecificColour = player_->getOtherColour(other, colour);
+	bool hasPlayerSpecificColour = player_->getOtherColour(*other_, colour);
 	if (!hasPlayerSpecificColour)
 	{
-		colour = other.getColour();
+		colour = other_->getColour();
 	}
 	uint32_t rgba = colour.RGBA();
-	IPC_RETURN(rgba);
+	IPC_RETURN(uint32_t rgba);
 }
 
 IPC_API(Player_AllowTeleport, uintptr_t player, bool allow)
@@ -1120,7 +1119,7 @@ IPC_API(Player_ShowGameText, uintptr_t player, ConstStringRef text, int time, in
 	GET_POOL_ENTITY_CHECKED(OmpManager::Get()->players, IPlayer, player, player_);
 	if (text.empty())
 	{
-		return NO_DATA_SUCCESS_RETURN;
+		IPC_RETURN();
 	}
 	player_->sendGameText(text, Milliseconds(time), style);
 	IPC_RETURN();
@@ -1148,12 +1147,12 @@ IPC_API(Player_GetGameText, uintptr_t player, int style)
 	StringView ms;
 	if (player_->getGameText(style, ms, mt, mr))
 	{
-		ConstStringRef message = ms;
+		StringView message = ms;
 		int time = (int)mt.count();
 		int remaining = (int)mr.count();
 		IPC_RETURN(ConstStringRef message, int time, int remaining);
 	}
-	return NO_DATA_SUCCESS_RETURN;
+	return FUNCTION_FAIL_RETURN;
 }
 
 IPC_API(Player_Ban, uintptr_t player)
@@ -1177,7 +1176,7 @@ IPC_API(Player_SendDeathMessage, uintptr_t player, uintptr_t killer, uintptr_t k
 	if (killee_)
 	{
 		GET_POOL_ENTITY_CHECKED(OmpManager::Get()->players, IPlayer, killer, killer_);
-		player_->sendDeathMessage(killee_, killer_, weapon);
+		player_->sendDeathMessage(*killee_, killer_, weapon);
 	}
 	else
 	{
@@ -1190,7 +1189,7 @@ IPC_API(Player_SendMessageToPlayer, uintptr_t player, uintptr_t sender, ConstStr
 {
 	GET_POOL_ENTITY_CHECKED(OmpManager::Get()->players, IPlayer, player, player_);
 	GET_POOL_ENTITY_CHECKED(OmpManager::Get()->players, IPlayer, sender, sender_);
-	player_->sendChatMessage(sender_, message);
+	player_->sendChatMessage(*sender_, message);
 	IPC_RETURN();
 }
 
@@ -1208,7 +1207,7 @@ IPC_API(Player_GetSkillLevel, uintptr_t player, int skill)
 	auto skills = player_->getSkillLevels();
 	if (skill >= 11 || skill < 0)
 	{
-		return NO_DATA_SUCCESS_RETURN;
+		return FUNCTION_FAIL_RETURN;
 	}
 	int ret = skills[skill];
 	IPC_RETURN(int ret);
@@ -1271,8 +1270,8 @@ IPC_API(Player_GetSpectateType, uintptr_t player)
 IPC_API(Player_GetRawIp, uintptr_t player)
 {
 	GET_POOL_ENTITY_CHECKED(OmpManager::Get()->players, IPlayer, player, player_);
-	ConstStringRef ip = player_->getNetworkData().networkID.address.v4;
-	IPC_RETURN(ConstStringRef ip);
+	uint32_t ip = player_->getNetworkData().networkID.address.v4;
+	IPC_RETURN(uint32_t ip);
 }
 
 IPC_API(Player_SetGravity, uintptr_t player, float gravity)
