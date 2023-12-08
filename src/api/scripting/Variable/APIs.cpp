@@ -4,13 +4,17 @@
 #define GET_VAR_COMP(comp)                           	\
 	IVariablesComponent* comp = OmpManager::Get()->vars; \
 	if (comp == nullptr)                                  \
-		IPC_RETURN();
+	{													   \
+		IPC_RETURN();                                      \
+	}
 
 #define GET_PLAYER_VAR_COMP(comp)                                       		\
 	GET_POOL_ENTITY_CHECKED(OmpManager::Get()->players, IPlayer, player, player_); \
 	IPlayerVariableData* comp = queryExtension<IPlayerVariableData>(player_); 		\
 	if (comp == nullptr)                                                     		\
-		IPC_RETURN();
+	{																				\
+		IPC_RETURN();																\
+	}
 
 IPC_API(SVar_SetInt, ConstStringRef varname, int value)
 {
@@ -52,9 +56,8 @@ IPC_API(SVar_GetString, ConstStringRef varname)
 	{
 		IPC_RETURN();
 	}
-	ConstStringRef output = var;
-	int len = std::get<StringView>(output).length();
-	IPC_RETURN(ConstStringRef output, int len);
+	StringView output = var;
+	IPC_RETURN(ConstStringRef output);
 }
 
 IPC_API(SVar_SetFloat, ConstStringRef varname, float value)
@@ -95,7 +98,7 @@ IPC_API(SVar_GetNameAtIndex, int index)
 	GET_VAR_COMP(component);
 	StringView varname;
 	bool res = component->getKeyAtIndex(index, varname);
-	ConstStringRef output;
+	StringView output = Impl::String();
 	if (res)
 	{
 		output = varname;
@@ -144,9 +147,8 @@ IPC_API(PVar_GetString, uintptr_t player, ConstStringRef varname)
 	{
 		IPC_RETURN();
 	}
-	ConstStringRef output = var;
-	int len = std::get<StringView>(output).length();
-	IPC_RETURN(ConstStringRef output, int len);
+	StringView output = var;
+	IPC_RETURN(ConstStringRef output);
 }
 
 IPC_API(PVar_SetFloat, uintptr_t player, ConstStringRef varname, float value)
@@ -182,7 +184,7 @@ IPC_API(PVar_GetNameAtIndex, uintptr_t player, int index)
 	GET_PLAYER_VAR_COMP(component);
 	StringView varname;
 	bool res = component->getKeyAtIndex(index, varname);
-	ConstStringRef output;
+	StringView output = Impl::String();
 	if (res)
 	{
 		output = varname;
